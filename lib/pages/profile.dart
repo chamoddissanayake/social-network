@@ -19,6 +19,7 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   final String currentUserId = currentUser?.id;
+
   Column buildCountColumn(String label, int count) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -40,10 +41,14 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  editProfile(){
-    Navigator.push(context, MaterialPageRoute(builder: (context)=>EditProfile(currentUserId: currentUserId) ));
+  editProfile() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => EditProfile(currentUserId: currentUserId)));
   }
-  Container buildButton({String text, Function function }){
+
+  Container buildButton({String text, Function function}) {
     return Container(
       padding: EdgeInsets.only(top: 2.0),
       child: FlatButton(
@@ -60,12 +65,9 @@ class _ProfileState extends State<Profile> {
           ),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Colors.blue,
-            border: Border.all(
-              color: Colors.blue
-            ),
-            borderRadius: BorderRadius.circular(5.0)
-          ),
+              color: Colors.blue,
+              border: Border.all(color: Colors.blue),
+              borderRadius: BorderRadius.circular(5.0)),
         ),
       ),
     );
@@ -75,15 +77,10 @@ class _ProfileState extends State<Profile> {
     //Viewing own profile
     // Show edit button
     bool isprofileOwner = currentUserId == widget.profileId;
-    if(isprofileOwner){
-      return buildButton(
-        text: "Edit Profile",
-        function: editProfile
-      );
+    if (isprofileOwner) {
+      return buildButton(text: "Edit Profile", function: editProfile);
     }
-
   }
-
 
   buildProfileHeader() {
     return FutureBuilder(
@@ -142,18 +139,22 @@ class _ProfileState extends State<Profile> {
                 padding: EdgeInsets.only(top: 4.0),
                 child: Text(
                   user.displayName,
-                  style: TextStyle(fontWeight: FontWeight.bold,),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-
-              // Container(
-              //   alignment: Alignment.centerLeft,
-              //   padding: EdgeInsets.only(top: 2.0),
-              //   child: Text(
-              //     // user.bio,
-              //     "Available"
-              //   ),
-              // ),
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: EdgeInsets.only(top: 2.0),
+                child: user.bio == null
+                    ? Text(
+                        // user.bio,
+                        "Available")
+                    : Text(
+                        user.bio,
+                      ),
+              ),
             ],
           ),
         );

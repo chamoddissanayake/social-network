@@ -77,7 +77,7 @@ class _HomeState extends State<Home> {
           "photoUrl": user.photoUrl,
           "email": user.email,
           "displayName": user.displayName,
-          "bio":"available",
+          "bio":"",
           "timestamp":timestamp
         });
         doc = await usersRef.document(user.id).get();
