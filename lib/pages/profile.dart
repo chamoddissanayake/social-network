@@ -1,12 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttershare/models/user.dart';
 import 'package:fluttershare/pages/edit_profile.dart';
 import 'package:fluttershare/pages/home.dart';
 import 'package:fluttershare/widgets/header.dart';
 import 'package:fluttershare/widgets/progress.dart';
-import 'dart:convert';
 
 class Profile extends StatefulWidget {
   final String profileId;
@@ -30,11 +28,14 @@ class _ProfileState extends State<Profile> {
           style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
         ),
         Container(
-          margin: EdgeInsets.only(top: 4),
+          margin: EdgeInsets.only(top: 4.0),
           child: Text(
             label,
             style: TextStyle(
-                color: Colors.grey, fontSize: 15, fontWeight: FontWeight.w400),
+              color: Colors.grey,
+              fontSize: 15.0,
+              fontWeight: FontWeight.w400,
+            ),
           ),
         ),
       ],
@@ -65,19 +66,21 @@ class _ProfileState extends State<Profile> {
           ),
           alignment: Alignment.center,
           decoration: BoxDecoration(
+            color: Colors.blue,
+            border: Border.all(
               color: Colors.blue,
-              border: Border.all(color: Colors.blue),
-              borderRadius: BorderRadius.circular(5.0)),
+            ),
+            borderRadius: BorderRadius.circular(5.0),
+          ),
         ),
       ),
     );
   }
 
   buildProfileButton() {
-    //Viewing own profile
-    // Show edit button
-    bool isprofileOwner = currentUserId == widget.profileId;
-    if (isprofileOwner) {
+    // viewing your own profile - should show edit profile button
+    bool isProfileOwner = currentUserId == widget.profileId;
+    if (isProfileOwner) {
       return buildButton(text: "Edit Profile", function: editProfile);
     }
   }
@@ -90,7 +93,6 @@ class _ProfileState extends State<Profile> {
           return circularProgress();
         }
         User user = User.fromDocument(snapshot.data);
-
         return Padding(
           padding: EdgeInsets.all(16.0),
           child: Column(
@@ -123,7 +125,7 @@ class _ProfileState extends State<Profile> {
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
               Container(
@@ -131,7 +133,10 @@ class _ProfileState extends State<Profile> {
                 padding: EdgeInsets.only(top: 12.0),
                 child: Text(
                   user.username,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.0,
+                  ),
                 ),
               ),
               Container(
@@ -147,13 +152,9 @@ class _ProfileState extends State<Profile> {
               Container(
                 alignment: Alignment.centerLeft,
                 padding: EdgeInsets.only(top: 2.0),
-                child: user.bio == null
-                    ? Text(
-                        // user.bio,
-                        "Available")
-                    : Text(
-                        user.bio,
-                      ),
+                child: Text(
+                  user.bio,
+                ),
               ),
             ],
           ),
@@ -167,9 +168,7 @@ class _ProfileState extends State<Profile> {
     return Scaffold(
       appBar: header(context, titleText: "Profile"),
       body: ListView(
-        children: <Widget>[
-          buildProfileHeader(),
-        ],
+        children: <Widget>[buildProfileHeader()],
       ),
     );
   }

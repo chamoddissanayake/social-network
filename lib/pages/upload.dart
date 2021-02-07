@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:fluttershare/models/user.dart';
 import 'package:fluttershare/pages/home.dart';
 import 'package:fluttershare/widgets/progress.dart';
@@ -22,9 +22,10 @@ class Upload extends StatefulWidget {
   _UploadState createState() => _UploadState();
 }
 
-class _UploadState extends State<Upload> {
-  TextEditingController locationController = TextEditingController();
+class _UploadState extends State<Upload>
+    with AutomaticKeepAliveClientMixin<Upload> {
   TextEditingController captionController = TextEditingController();
+  TextEditingController locationController = TextEditingController();
   File file;
   bool isUploading = false;
   String postId = Uuid().v4();
@@ -32,7 +33,10 @@ class _UploadState extends State<Upload> {
   handleTakePhoto() async {
     Navigator.pop(context);
     File file = await ImagePicker.pickImage(
-        source: ImageSource.camera, maxHeight: 675, maxWidth: 960);
+      source: ImageSource.camera,
+      maxHeight: 675,
+      maxWidth: 960,
+    );
     setState(() {
       this.file = file;
     });
@@ -41,33 +45,59 @@ class _UploadState extends State<Upload> {
   handleChooseFromGallery() async {
     Navigator.pop(context);
     File file = await ImagePicker.pickImage(source: ImageSource.gallery);
-    this.setState(() {
+    setState(() {
       this.file = file;
     });
   }
 
-  selectImage(BuildContext parentContext) {
+  selectImage(parentContext) {
     return showDialog(
-        context: parentContext,
-        builder: (context) {
-          return SimpleDialog(
-            title: Text("Create Post"),
-            children: <Widget>[
-              SimpleDialogOption(
-                child: Text("Photo with camera"),
-                onPressed: handleTakePhoto,
-              ),
-              SimpleDialogOption(
-                child: Text("Image from gallery"),
-                onPressed: handleChooseFromGallery,
-              ),
-              SimpleDialogOption(
-                child: Text("Cancel"),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          );
-        });
+      context: parentContext,
+      builder: (context) {
+        return SimpleDialog(
+          title: Text("Create Post"),
+          children: <Widget>[
+            SimpleDialogOption(
+                child: Text("Photo with Camera"), onPressed: handleTakePhoto),
+            SimpleDialogOption(
+                child: Text("Image from Gallery"),
+                onPressed: handleChooseFromGallery),
+            SimpleDialogOption(
+              child: Text("Cancel"),
+              onPressed: () => Navigator.pop(context),
+            )
+          ],
+        );
+      },
+    );
+  }
+
+  Container buildSplashScreen() {
+    return Container(
+      color: Theme.of(context).accentColor.withOpacity(0.6),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          SvgPicture.asset('assets/images/upload.svg', height: 260.0),
+          Padding(
+            padding: EdgeInsets.only(top: 20.0),
+            child: RaisedButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Text(
+                  "Upload Image",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22.0,
+                  ),
+                ),
+                color: Colors.deepOrange,
+                onPressed: () => selectImage(context)),
+          ),
+        ],
+      ),
+    );
   }
 
   clearImage() {
@@ -81,7 +111,7 @@ class _UploadState extends State<Upload> {
     final path = tempDir.path;
     Im.Image imageFile = Im.decodeImage(file.readAsBytesSync());
     final compressedImageFile = File('$path/img_$postId.jpg')
-      ..writeAsBytes(Im.encodeJpg(imageFile, quality: 85));
+      ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
     setState(() {
       file = compressedImageFile;
     });
@@ -89,8 +119,7 @@ class _UploadState extends State<Upload> {
 
   Future<String> uploadImage(imageFile) async {
     StorageUploadTask uploadTask =
-        storageRef.child("post_$postId.jpg").putFile(imageFile);
-    await uploadTask.onComplete;
+    storageRef.child("post_$postId.jpg").putFile(imageFile);
     StorageTaskSnapshot storageSnap = await uploadTask.onComplete;
     String downloadUrl = await storageSnap.ref.getDownloadURL();
     return downloadUrl;
@@ -98,37 +127,39 @@ class _UploadState extends State<Upload> {
 
   createPostInFirestore(
       {String mediaUrl, String location, String description}) {
-      postsRef
-          .document(widget.currentUser.id)
-          .collection("userPosts")
-          .document(postId)
-          .setData({
-        "postId": postId,
-        "ownerId":widget.currentUser.id,
-        "username":widget.currentUser.username,
-        "mediaUrl":mediaUrl,
-        "description":description,
-        "location":location,
-        "timestamp": timestamp,
-        "likes": {}
-      });
+    postsRef
+        .document(widget.currentUser.id)
+        .collection("userPosts")
+        .document(postId)
+        .setData({
+      "postId": postId,
+      "ownerId": widget.currentUser.id,
+      "username": widget.currentUser.username,
+      "mediaUrl": mediaUrl,
+      "description": description,
+      "location": location,
+      "timestamp": timestamp,
+      "likes": {},
+    });
   }
 
   handleSubmit() async {
     setState(() {
-      this.isUploading = true;
+      isUploading = true;
     });
     await compressImage();
     String mediaUrl = await uploadImage(file);
     createPostInFirestore(
-        mediaUrl: mediaUrl,
-        location: locationController.text,
-        description: captionController.text);
+      mediaUrl: mediaUrl,
+      location: locationController.text,
+      description: captionController.text,
+    );
     captionController.clear();
     locationController.clear();
     setState(() {
       file = null;
-      isUploading= false;
+      isUploading = false;
+      postId = Uuid().v4();
     });
   }
 
@@ -137,14 +168,10 @@ class _UploadState extends State<Upload> {
       appBar: AppBar(
         backgroundColor: Colors.white70,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.black,
-          ),
-          onPressed: clearImage,
-        ),
+            icon: Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: clearImage),
         title: Text(
-          "Caption Post ",
+          "Caption Post",
           style: TextStyle(color: Colors.black),
         ),
         actions: [
@@ -153,9 +180,10 @@ class _UploadState extends State<Upload> {
             child: Text(
               "Post",
               style: TextStyle(
-                  color: Colors.blueAccent,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20),
+                color: Colors.blueAccent,
+                fontWeight: FontWeight.bold,
+                fontSize: 20.0,
+              ),
             ),
           ),
         ],
@@ -172,7 +200,9 @@ class _UploadState extends State<Upload> {
                 child: Container(
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                        fit: BoxFit.cover, image: FileImage(file)),
+                      fit: BoxFit.cover,
+                      image: FileImage(file),
+                    ),
                   ),
                 ),
               ),
@@ -184,14 +214,16 @@ class _UploadState extends State<Upload> {
           ListTile(
             leading: CircleAvatar(
               backgroundImage:
-                  CachedNetworkImageProvider(widget.currentUser.photoUrl),
+              CachedNetworkImageProvider(widget.currentUser.photoUrl),
             ),
             title: Container(
               width: 250.0,
               child: TextField(
                 controller: captionController,
                 decoration: InputDecoration(
-                    hintText: "Write a caption", border: InputBorder.none),
+                  hintText: "Write a caption...",
+                  border: InputBorder.none,
+                ),
               ),
             ),
           ),
@@ -207,14 +239,15 @@ class _UploadState extends State<Upload> {
               child: TextField(
                 controller: locationController,
                 decoration: InputDecoration(
-                    hintText: "Where was this photo taken?",
-                    border: InputBorder.none),
+                  hintText: "Where was this photo taken?",
+                  border: InputBorder.none,
+                ),
               ),
             ),
           ),
           Container(
-            width: 200,
-            height: 100,
+            width: 200.0,
+            height: 100.0,
             alignment: Alignment.center,
             child: RaisedButton.icon(
               label: Text(
@@ -231,66 +264,31 @@ class _UploadState extends State<Upload> {
                 color: Colors.white,
               ),
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
-  getUserLocation() async{
-    Position position =await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    List<Placemark> placemarks = await Geolocator().placemarkFromCoordinates(position.latitude, position.longitude);
+  getUserLocation() async {
+    Position position = await Geolocator()
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    List<Placemark> placemarks = await Geolocator()
+        .placemarkFromCoordinates(position.latitude, position.longitude);
     Placemark placemark = placemarks[0];
-
     String completeAddress =
-        '${placemark.subThoroughfare}, '
-        '${placemark.thoroughfare} , '
-        '${placemark.subLocality} , '
-        '${placemark.locality}, '
-        '${placemark.subAdministrativeArea}, '
-        '${placemark.administrativeArea} , '
-        '${placemark.postalCode} , '
-        '${placemark.country}';
+        '${placemark.subThoroughfare} ${placemark.thoroughfare}, ${placemark.subLocality} ${placemark.locality}, ${placemark.subAdministrativeArea}, ${placemark.administrativeArea} ${placemark.postalCode}, ${placemark.country}';
     print(completeAddress);
-
-    String formattedAddress= "${placemark.locality}, ${placemark.country}";
+    String formattedAddress = "${placemark.locality}, ${placemark.country}";
     locationController.text = formattedAddress;
   }
 
-  Container buildSplashScreen() {
-    return Container(
-      color: Theme.of(context).accentColor.withOpacity(0.6),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          SvgPicture.asset(
-            'assets/images/upload.svg',
-            height: 260.0,
-          ),
-          Padding(
-              padding: EdgeInsets.only(top: 20.0),
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Text(
-                  "Upload Image",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22.0,
-                  ),
-                ),
-                color: Colors.deepOrange,
-                onPressed: () => selectImage(context),
-              )),
-        ],
-      ),
-    );
-  }
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return file == null ? buildSplashScreen() : buildUploadForm();
-    // return buildUploadForm();
   }
 }

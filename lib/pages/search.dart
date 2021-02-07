@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttershare/models/user.dart';
@@ -35,18 +34,11 @@ class _SearchState extends State<Search> {
       title: TextFormField(
         controller: searchController,
         decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide(
-              width: 0,
-              style: BorderStyle.none,
-            ),
-          ),
-          hintText: "Search for a user ...",
+          hintText: "Search for a user...",
           filled: true,
           prefixIcon: Icon(
             Icons.account_box,
-            size: 28,
+            size: 28.0,
           ),
           suffixIcon: IconButton(
             icon: Icon(Icons.clear),
@@ -58,9 +50,8 @@ class _SearchState extends State<Search> {
     );
   }
 
-  buildNoContent() {
+  Container buildNoContent() {
     final Orientation orientation = MediaQuery.of(context).orientation;
-
     return Container(
       child: Center(
         child: ListView(
@@ -68,10 +59,10 @@ class _SearchState extends State<Search> {
           children: <Widget>[
             SvgPicture.asset(
               'assets/images/search.svg',
-              height: orientation == Orientation.portrait ? 300 : 200,
+              height: orientation == Orientation.portrait ? 300.0 : 200.0,
             ),
             Text(
-              "Find users",
+              "Find Users",
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
@@ -112,7 +103,7 @@ class _SearchState extends State<Search> {
       backgroundColor: Theme.of(context).primaryColor.withOpacity(0.8),
       appBar: buildSearchField(),
       body:
-          searchResultsFuture == null ? buildNoContent() : buildSearchResults(),
+      searchResultsFuture == null ? buildNoContent() : buildSearchResults(),
     );
   }
 }
@@ -138,9 +129,12 @@ class UserResult extends StatelessWidget {
               title: Text(
                 user.displayName,
                 style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
-              subtitle: Text(user.username, style: TextStyle(color: Colors.white ),),
+              subtitle: Text(
+                user.username,
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
           Divider(
